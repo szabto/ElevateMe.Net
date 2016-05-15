@@ -25,7 +25,7 @@ namespace ElevatorSaga.Core.Classes
     {
         private Direction _direction = Direction.None;
         /// <summary>
-        /// Move direction. If the elevator is stopped, then Direction will bi Direction.None
+        /// Move direction. If the elevator is stopped, then Direction will be Direction.None
         /// </summary>
         public Direction Direction { get { return _direction; } }
 

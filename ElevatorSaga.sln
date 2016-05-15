@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevatorSaga", "ElevatorSaga\ElevatorSaga.csproj", "{C6A99B4C-EC52-4711-B2C4-D0B5BB942FE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevatorSaga.Form", "ElevatorSaga.Form\ElevatorSaga.Form.csproj", "{C6A99B4C-EC52-4711-B2C4-D0B5BB942FE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevatorSaga.Core", "ElevatorSaga.Core\ElevatorSaga.Core.csproj", "{70D89D6E-3E9E-4BD2-95FD-5035C4028741}"
 EndProject

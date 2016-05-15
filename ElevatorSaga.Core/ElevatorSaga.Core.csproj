@@ -45,6 +45,9 @@
     <Compile Include="Classes\Floor.cs" />
     <Compile Include="Classes\User.cs" />
     <Compile Include="Classes\World.cs" />
+    <Compile Include="Interfaces\IWorld.cs" />
+    <Compile Include="Interfaces\IElevator.cs" />
+    <Compile Include="Interfaces\IFloor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

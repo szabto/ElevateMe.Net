@@ -33,7 +33,7 @@ namespace ElevatorSaga.Core.Classes
 
         public EventHandler<FloorEventArgs> FloorAdded;
         public EventHandler<ElevatorEventArgs> ElevatorAdded;
-
+    
         public void Generate()
         {
             int maxFloors = 4;

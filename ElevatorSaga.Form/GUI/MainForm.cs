@@ -24,7 +24,7 @@ namespace ElevatorSaga.GUI
             InitializeComponent();
             _world = new World();
 
-            _world.FloorAdded += (object s, FloorEventArgs a) =>
+            _world.FloorAdded += (object s, FloorAddedEventArgs a) =>
             {
                 _floors.Add(a.Floor);
 
@@ -38,7 +38,7 @@ namespace ElevatorSaga.GUI
             };
 
 
-            _world.ElevatorAdded += (object s, ElevatorEventArgs a) =>
+            _world.ElevatorAdded += (object s, ElevatorAddedEventArgs a) =>
             {
                 _elevators.Add(a.Elevator);
 

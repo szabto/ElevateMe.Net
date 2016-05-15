@@ -26,6 +26,9 @@ namespace ElevatorSaga.Core.Classes
         }
     }
 
+    /// <summary>
+    /// Main world. This will do everything.
+    /// </summary>
     public class World
     {
         private readonly List<Elevator> _elevators = new List<Elevator>();

@@ -38,16 +38,38 @@ namespace ElevatorSaga.Core.Classes
             { Direction.Down, false }
         };
 
+        /// <summary>
+        /// Shows the floor's level.
+        /// </summary>
         public readonly int Level;
 
+        /// <summary>
+        /// Determines if current floor is Top
+        /// </summary>
         public readonly bool IsTopFloor;
+        /// <summary>
+        /// Determines if current floor is bottom.
+        /// </summary>
         public readonly bool IsBottomFloor;
 
         private List<User> awaitingUsers = new List<User>();
 
+        /// <summary>
+        /// Event for button presses on the floor. This triggered by awaiting users, or GUI interaction.
+        /// </summary>
         public EventHandler<FloorButtonPressedEventArgs> OnButtonPressed;
+
+        /// <summary>
+        /// Event for button state changes on the floor. This triggered by awaiting users, GUI interaction, or Elevator arrival, or Elevator Direction change.
+        /// </summary>
         public EventHandler<FloorButtonStateChangedEventArgs> OnButtonStateChanged;
 
+        /// <summary>
+        /// Floor constructor. 
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="it"></param>
+        /// <param name="ib"></param>
         public Floor(int level, bool it = false, bool ib = false)
         {
             Level = level;
@@ -69,17 +91,23 @@ namespace ElevatorSaga.Core.Classes
             }
         }
 
+        /// <summary>
+        /// Press up botton in the floor. (Can pressed only once.)
+        /// </summary>
         public void PressUpButton()
         {
             ButtonPressed_Internal(Direction.Up);
         }
 
+        /// <summary>
+        /// Press down botton in the floor. (Can pressed only once.)
+        /// </summary>
         public void PressDownButton()
         {
             ButtonPressed_Internal(Direction.Down);
         }
 
-        protected void OnEntranceAvailable(Elevator e)
+        private void OnEntranceAvailable(Elevator e)
         {
             Direction changeDir = Direction.None;
             if (buttonStates[Direction.Up] && e.GoingUpIndicator)

@@ -42,11 +42,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Challenges\Challenge.cs" />
     <Compile Include="Classes\Direction.cs" />
     <Compile Include="Classes\Elevator.cs" />
     <Compile Include="Classes\Floor.cs" />
+    <Compile Include="Classes\Mood.cs" />
     <Compile Include="Classes\User.cs" />
     <Compile Include="Classes\World.cs" />
+    <Compile Include="Extensions\TypeHelper.cs" />
     <Compile Include="Interfaces\IWorld.cs" />
     <Compile Include="Interfaces\IElevator.cs" />
     <Compile Include="Interfaces\IFloor.cs" />

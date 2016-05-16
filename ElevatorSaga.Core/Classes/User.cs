@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElevatorSaga.Core.Classes
 {
+
     public abstract class User
     {
         /// <summary>
@@ -23,7 +24,53 @@ namespace ElevatorSaga.Core.Classes
         /// </summary>
         public readonly Floor DestinationFloor;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsDone { get; private set; }
+
+        /// <summary>
+        /// Stores the user's current elevator. If user on floor, this will be null.
+        /// </summary>
+        public Elevator CurrentElevator { get; private set; }
+
+        private readonly object tickLock = new object();
+
+        /// <summary>
+        /// Returns the user's mood
+        /// </summary>
+        public Mood Mood = Mood.Happy;
+
+        private int _serviceLevel = 100;
+        /// <summary>
+        /// Contain's the service level. It decreases every 2 seconds of wait.
+        /// </summary>
+        public int ServiceLevel
+        {
+            get { return _serviceLevel; }
+            set
+            {
+                _serviceLevel = value;
+                Mood = MoodHelper.GetMoodBySla(value);
+            }
+        }
+
+        private int _waitingTime = 0;
+
+        /// <summary>
+        /// Returns the waiting time of user on floor.
+        /// </summary>
+        public int WaitingTime
+        {
+            get { return _waitingTime; }
+            set
+            {
+                _waitingTime = value;
+                if (ServiceLevel > 0 && WaitingTime % 2 == 0)
+                    ServiceLevel--;
+            }
+        }
+
 
         /// <summary>
         /// Creates a user with waiting floor, and a destination floor
@@ -36,12 +83,48 @@ namespace ElevatorSaga.Core.Classes
             DestinationFloor = destinationFloor;
         }
 
-        private void OnEntranceAvailable(Elevator e)
+        public void Update(int gameTime)
         {
-            if (e.CanUserEnter(this))
+            if (gameTime % World.FPS == 0)
             {
-
+                lock (tickLock)
+                {
+                    if (CurrentElevator == null && !IsDone)
+                        WaitingTime++;
+                }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void PressButton()
+        {
+            if (CurrentFloor != null)
+            {
+                if (CurrentFloor.Level < DestinationFloor.Level) CurrentFloor.PressUpButton();
+                else CurrentFloor.PressDownButton();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elevator"></param>
+        /// <returns></returns>
+        public bool OnEntranceAvailable(Elevator elevator)
+        {
+            bool enter = false;
+            if (elevator.CanUserEnter(this))
+            {
+                enter = elevator.EnterUser(this);
+                if (enter)
+                {
+                    CurrentElevator = elevator;
+                    CurrentFloor = null;
+                }
+            }
+            return enter;
         }
     }
 

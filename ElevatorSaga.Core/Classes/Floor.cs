@@ -91,6 +91,11 @@ namespace ElevatorSaga.Core.Classes
             }
         }
 
+        public void Update(int gt)
+        {
+            awaitingUsers.ForEach(x => x.Update(gt));
+        }
+
         /// <summary>
         /// Press up botton in the floor. (Can pressed only once.)
         /// </summary>
@@ -126,6 +131,29 @@ namespace ElevatorSaga.Core.Classes
             {
                 if (OnButtonStateChanged != null)
                     OnButtonStateChanged.Invoke(this, new FloorButtonStateChangedEventArgs(buttonStates, changeDir, false));
+            }
+
+            Inner_EntranceAvailable(e);
+        }
+
+        private void Inner_EntranceAvailable(Elevator e)
+        {
+            User[] usersToDir;
+            if (e.GoingDownIndicator != e.GoingUpIndicator)
+            {
+                usersToDir = GetUsersToDirection(e.GoingDownIndicator ? Direction.Down : Direction.Up).ToArray();
+            }
+            else
+            {
+                usersToDir = awaitingUsers.ToArray();
+            }
+
+            foreach (User u in usersToDir)
+            { 
+                if( !u.OnEntranceAvailable(e) ) // when user could not enter to elevator, press again the direction button.
+                {
+                    u.PressButton();
+                }
             }
         }
 

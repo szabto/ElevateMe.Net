@@ -6,11 +6,25 @@ using System.Threading.Tasks;
 
 namespace ElevatorSaga.Core.Classes
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class IndicatorEventArgs : EventArgs
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public readonly Direction Direction;
+        /// <summary>
+        /// 
+        /// </summary>
         public readonly bool Value;
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <param name="val"></param>
         public IndicatorEventArgs(Direction dir, bool val)
         {
             Direction = dir;
@@ -42,9 +56,26 @@ namespace ElevatorSaga.Core.Classes
         public bool GoingDownIndicator { get { return _goingDownindicator; } set { if (IndicatorChanged != null && _goingDownindicator != value) IndicatorChanged(this, new IndicatorEventArgs(Direction.Up, value)); _goingDownindicator = value; } }
 
         /// <summary>
+        /// Floor list with destination levels. Not sorted automatically
+        /// </summary>
+        public List<int> DestinationQueue = new List<int>();
+
+        private int NextLevel = 0;
+
+        /// <summary>
         /// Event triggered, when some of indicator has been changed.
         /// </summary>
         public EventHandler<IndicatorEventArgs> IndicatorChanged;
+
+        /// <summary>
+        /// Event when a not queued floor is passed
+        /// </summary>
+        public EventHandler<EventArgs> PassFloor;
+
+        /// <summary>
+        /// Event for stopping at floor.
+        /// </summary>
+        public EventHandler<EventArgs> StoppedAtFloor;
 
         private int CurrentWeight { get { return _usersIn.Sum(x => x.Weigth); } }
 
@@ -73,12 +104,52 @@ namespace ElevatorSaga.Core.Classes
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="floor"></param>
+        /// <param name="goFirst"></param>
+        public void GoToFloor(int floor, bool goFirst = false)
+        {
+            if (goFirst) DestinationQueue.Insert(0, floor);
+            else DestinationQueue.Add(floor);
+        }
+
+        /// <summary>
         /// Returns the current weight load of the elevator in percentage.
         /// </summary>
         /// <returns>Elevators current load. Min is 0, max is 100</returns>
         public int GetCurrentLoad()
         {
             return (int)Math.Round((decimal)CurrentWeight / MaxWeight * 100);
+        }
+        
+        public void Update(int gt)
+        {
+
+        }
+
+        private void ExitUsers()
+        {
+            
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public bool EnterUser(User user)
+        {
+            if (user == null) throw new NullReferenceException("Parameter User cannot be null.");
+            bool success = false;
+
+            if (CanUserEnter(user))
+            {
+                _usersIn.Add(user);
+                success = true;
+            }
+
+            return success;
         }
 
         /// <summary>

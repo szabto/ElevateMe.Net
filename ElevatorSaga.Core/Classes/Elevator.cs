@@ -1,11 +1,26 @@
-﻿using System;
+﻿using ElevatorSaga.Core.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ElevatorSaga.Core.Classes
 {
+
+    public class ElevatorStoppedEventArgs : EventArgs
+    {
+        public readonly Elevator Elevator;
+        public readonly int Floor;
+
+        public ElevatorStoppedEventArgs(Elevator el, int fl)
+        {
+            Elevator = el;
+            Floor = fl;
+        }
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -19,7 +34,7 @@ namespace ElevatorSaga.Core.Classes
         /// 
         /// </summary>
         public readonly bool Value;
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -35,7 +50,7 @@ namespace ElevatorSaga.Core.Classes
     /// <summary>
     /// 
     /// </summary>
-    public class Elevator
+    public class Elevator : IElevatorGui
     {
         private Direction _direction = Direction.None;
         /// <summary>
@@ -60,6 +75,9 @@ namespace ElevatorSaga.Core.Classes
         /// </summary>
         public List<int> DestinationQueue = new List<int>();
 
+        private bool waitingForUsers = false;
+        private bool isMoving = false;
+
         private int NextLevel = 0;
 
         /// <summary>
@@ -75,7 +93,9 @@ namespace ElevatorSaga.Core.Classes
         /// <summary>
         /// Event for stopping at floor.
         /// </summary>
-        public EventHandler<EventArgs> StoppedAtFloor;
+        public EventHandler<ElevatorStoppedEventArgs> StoppedAtFloor;
+
+        public EventHandler<EventArgs> Idle;
 
         private int CurrentWeight { get { return _usersIn.Sum(x => x.Weigth); } }
 
@@ -85,6 +105,15 @@ namespace ElevatorSaga.Core.Classes
         public int EstimatedCapacity
         {
             get { return (int)Math.Floor((decimal)MaxWeight / 80); }
+        }
+
+        private float _position = 0;
+        public float Positinon
+        {
+            get
+            {
+                return _position;
+            }
         }
 
         /// <summary>
@@ -122,15 +151,59 @@ namespace ElevatorSaga.Core.Classes
         {
             return (int)Math.Round((decimal)CurrentWeight / MaxWeight * 100);
         }
-        
+
+        private int idleSince = 0;
+        bool idleTriggered = false;
+
         public void Update(int gt)
         {
+            if (!waitingForUsers)
+            {
+                if (!isMoving && DestinationQueue.Count > 0)
+                {
+                    NextLevel = DestinationQueue[0];
+                    _direction = NextLevel < Positinon ? Direction.Down : Direction.Up;
+                    isMoving = true;
+                    idleTriggered = false;
+                    idleSince = 0;
+                }
+                if (!isMoving)
+                {
+                    idleSince++; //TODO set idle time configurable
+                    if (idleSince > 20 && !idleTriggered)
+                    {
+                        idleTriggered = true;
+                        if (Idle != null) Idle(this, new EventArgs());
+                    }
+                }
+            }
 
+            if (isMoving && Math.Abs(Positinon - NextLevel) > 0.05)
+            {
+                if (_direction == Direction.Down)
+                    _position -= 0.1f;
+                else
+                    _position += 0.1f;
+            }
+            else if (isMoving && Math.Abs(Positinon - NextLevel) <= 0.05)
+            {
+                DestinationQueue.RemoveAt(0);
+                isMoving = false;
+                _direction = Direction.None;
+                if (StoppedAtFloor != null) StoppedAtFloor(this, new ElevatorStoppedEventArgs(this, (int)Math.Round(Positinon)));
+                waitingForUsers = true;
+
+                ExitUsers();
+            }
         }
 
         private void ExitUsers()
         {
-            
+            new Thread(() =>
+            {
+                Thread.Sleep(1000); //TODO change this
+                waitingForUsers = false;
+            }).Start();
         }
 
         /// <summary>
@@ -159,7 +232,7 @@ namespace ElevatorSaga.Core.Classes
         /// <returns>True if user can enter, false if not</returns>
         public bool CanUserEnter(User user)
         {
-            if (user == null) throw new NullReferenceException("User cannot be null!");
+            if (user == null) throw new NullReferenceException("Parameter User cannot be null!");
             return CurrentWeight + user.Weigth < MaxWeight;
         }
     }

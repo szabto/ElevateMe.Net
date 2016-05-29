@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ElevatorSaga.Core.Classes;
+using ElevatorSaga.Core.Extensions;
+using ElevatorSaga.Core.Interfaces;
+
 namespace ElevatorSaga.GUI
 {
     public partial class MainForm : Form
@@ -19,10 +22,18 @@ namespace ElevatorSaga.GUI
         private const int floorHeight = 80;
         private const int shaftWidth = 80;
 
+        private Timer timer = new Timer();
+
+        private List<ElevatorShaftControl> elevatorShafts = new List<ElevatorShaftControl>();
+
         public MainForm()
         {
             InitializeComponent();
             _world = new World();
+
+            timer.Tick += Timer_Tick;
+            timer.Interval = 1000 / 20;
+            timer.Start();
 
             _world.FloorAdded += (object s, FloorAddedEventArgs a) =>
             {
@@ -51,6 +62,8 @@ namespace ElevatorSaga.GUI
 
                 panel1.Controls.Add(esc);
 
+                elevatorShafts.Add(esc);
+
                 esc.BringToFront();
             };
 
@@ -58,9 +71,17 @@ namespace ElevatorSaga.GUI
             this.Height = (_floors.Count+1) * floorHeight;
         }
 
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            elevatorShafts.ForEach(x => x.Update());
+        }
+
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
+            string assemblyName = "ElevatorSaga.CustomDll.CustomWorld, ElevatorSaga.CustomDll";
+            IWorld w = (IWorld)Activator.CreateInstance(assemblyName.LoadType());
 
+            w.WorldGenerated(_floors, _elevators);
         }
     }
 }

@@ -50,6 +50,7 @@
     <Compile Include="Classes\User.cs" />
     <Compile Include="Classes\World.cs" />
     <Compile Include="Extensions\TypeHelper.cs" />
+    <Compile Include="Interfaces\IPrivateElevator.cs" />
     <Compile Include="Interfaces\IWorld.cs" />
     <Compile Include="Interfaces\IElevator.cs" />
     <Compile Include="Interfaces\IFloor.cs" />

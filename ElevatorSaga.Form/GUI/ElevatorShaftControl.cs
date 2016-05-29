@@ -13,6 +13,7 @@ namespace ElevatorSaga.GUI
 {
     public partial class ElevatorShaftControl : UserControl
     {
+        private static int FloorHeight = 0;
         private readonly Elevator Elevator;
 
 
@@ -21,12 +22,15 @@ namespace ElevatorSaga.GUI
         {
             InitializeComponent(e);
 
+            FloorHeight = floorHeight;
+
+
             elevatorMain = new ElevatorControl(e);
 
 
             elevatorMain.Width = width;
             elevatorMain.Height = floorHeight;
-            elevatorMain.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+            elevatorMain.Anchor = AnchorStyles.Left | AnchorStyles.Top;
             elevatorMain.Location = new Point(0, Height - floorHeight);
 
             Controls.Add(elevatorMain);
@@ -34,6 +38,11 @@ namespace ElevatorSaga.GUI
             BackColor = Color.Transparent;
 
             Elevator = e;
+        }
+
+        public void Update()
+        {
+            elevatorMain.Location = new Point(0, (int)(Height - FloorHeight * (Elevator.Positinon + 1)));
         }
     }
 }

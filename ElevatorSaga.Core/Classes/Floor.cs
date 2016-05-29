@@ -9,9 +9,11 @@ namespace ElevatorSaga.Core.Classes
     public class FloorButtonPressedEventArgs : EventArgs
     {
         public readonly Direction Button;
+        public readonly Floor Floor;
 
-        public FloorButtonPressedEventArgs(Direction b)
+        public FloorButtonPressedEventArgs(Floor f, Direction b)
         {
+            this.Floor = f;
             this.Button = b;
         }
     }
@@ -76,6 +78,21 @@ namespace ElevatorSaga.Core.Classes
 
             IsTopFloor = it;
             IsBottomFloor = ib;
+
+            World.Instance.ElevatorAdded += OnElevatorAdded;
+        }
+
+        private void OnElevatorAdded(object sender, ElevatorAddedEventArgs eargs)
+        {
+            eargs.Elevator.StoppedAtFloor += OnElevatorStopped;
+        }
+
+        private void OnElevatorStopped(object sender, ElevatorStoppedEventArgs eargs)
+        {
+            if (eargs.Floor == this.Level)
+            {
+                OnEntranceAvailable(eargs.Elevator);
+            }
         }
 
         private void ButtonPressed_Internal(Direction dir)
@@ -85,7 +102,7 @@ namespace ElevatorSaga.Core.Classes
                 buttonStates[dir] = true;
 
                 if (OnButtonPressed != null)
-                    OnButtonPressed(this, new FloorButtonPressedEventArgs(dir));
+                    OnButtonPressed(this, new FloorButtonPressedEventArgs(this, dir));
                 if (OnButtonStateChanged != null)
                     OnButtonStateChanged.Invoke(this, new FloorButtonStateChangedEventArgs(buttonStates, dir, true));
             }
@@ -130,7 +147,7 @@ namespace ElevatorSaga.Core.Classes
             if (changeDir != Direction.None)
             {
                 if (OnButtonStateChanged != null)
-                    OnButtonStateChanged.Invoke(this, new FloorButtonStateChangedEventArgs(buttonStates, changeDir, false));
+                    OnButtonStateChanged(this, new FloorButtonStateChangedEventArgs(buttonStates, changeDir, false));
             }
 
             Inner_EntranceAvailable(e);
@@ -149,8 +166,8 @@ namespace ElevatorSaga.Core.Classes
             }
 
             foreach (User u in usersToDir)
-            { 
-                if( !u.OnEntranceAvailable(e) ) // when user could not enter to elevator, press again the direction button.
+            {
+                if (!u.OnEntranceAvailable(e)) // when user could not enter to elevator, press again the direction button.
                 {
                     u.PressButton();
                 }

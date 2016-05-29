@@ -50,8 +50,12 @@ namespace ElevatorSaga.GUI
             if (isPressed != eargs.ChangedValue)
             {
                 fromEvent = true;
-                box.Checked = eargs.ChangedValue;
-                if (eargs.ChangedValue == true) box.Enabled = false;
+                box.Invoke(new Action(() =>
+                {
+                    box.Checked = eargs.ChangedValue;
+                    box.Enabled = !box.Checked;
+                    fromEvent = false;
+                }));
             }
         }
 

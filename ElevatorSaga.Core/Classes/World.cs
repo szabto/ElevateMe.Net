@@ -55,6 +55,9 @@ namespace ElevatorSaga.Core.Classes
     {
         private readonly List<Elevator> _elevators = new List<Elevator>();
         private readonly List<Floor> _floors = new List<Floor>();
+        public static World Instance { get { return _instance; } }
+
+        private static World _instance = null;
 
         private int currentChallengeIndex = 1;
 
@@ -78,15 +81,18 @@ namespace ElevatorSaga.Core.Classes
         public World()
         {
             MainTimer = new Timer(Update, null, UpdateTime, UpdateTime);
+            _instance = this;
         }
-        
-        private  void Update(object state)
+
+        private void Update(object state)
         {
             gameTime++;
 
             _elevators.ForEach(x => x.Update(gameTime));
             _floors.ForEach(x => x.Update(gameTime));
         }
+
+
 
         /// <summary>
         /// Function to generate the World.
@@ -127,7 +133,7 @@ namespace ElevatorSaga.Core.Classes
         public void LoadUserCode(Type t)
         {
             IWorld customWorld = (IWorld)Activator.CreateInstance(t, _elevators, _floors);
-            
+
         }
     }
 }

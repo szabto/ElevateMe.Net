@@ -32,6 +32,9 @@ namespace ElevatorSaga.Core.Classes
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public class Floor
     {
         private readonly Dictionary<Direction, bool> buttonStates = new Dictionary<Direction, bool>()
@@ -55,6 +58,11 @@ namespace ElevatorSaga.Core.Classes
         public readonly bool IsBottomFloor;
 
         private List<User> awaitingUsers = new List<User>();
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        public User[] AwaitingUsers { get { User[] list = null; lock (awaitingUsers) { list = awaitingUsers.ToArray(); } return list; } }
 
         /// <summary>
         /// Event for button presses on the floor. This triggered by awaiting users, or GUI interaction.
@@ -87,7 +95,7 @@ namespace ElevatorSaga.Core.Classes
             eargs.Elevator.StoppedAtFloor += OnElevatorStopped;
         }
 
-        private void OnElevatorStopped(object sender, ElevatorStoppedEventArgs eargs)
+        private void OnElevatorStopped(object sender, FloorEventArgs eargs)
         {
             if (eargs.Floor == this.Level)
             {
@@ -108,9 +116,24 @@ namespace ElevatorSaga.Core.Classes
             }
         }
 
+        Random rnd = new Random();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gt"></param>
         public void Update(int gt)
         {
             awaitingUsers.ForEach(x => x.Update(gt));
+
+            if(rnd.Next(100) > 95)
+            {
+                lock(awaitingUsers)
+                {
+                    User u = User.GetRandom(this);
+                    awaitingUsers.Add(u);
+                }
+            }
         }
 
         /// <summary>
@@ -176,7 +199,7 @@ namespace ElevatorSaga.Core.Classes
 
         private List<User> GetUsersToDirection(Direction dir)
         {
-            return awaitingUsers.FindAll(user => dir == Direction.Up ? this.Level < user.DestinationFloor.Level : this.Level > user.DestinationFloor.Level).ToList<User>();
+            return awaitingUsers.FindAll(user => dir == Direction.Up ? this.Level < user.DestinationFloor : this.Level > user.DestinationFloor).ToList<User>();
         }
     }
 }

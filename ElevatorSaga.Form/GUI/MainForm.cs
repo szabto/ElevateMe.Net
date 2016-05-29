@@ -25,6 +25,7 @@ namespace ElevatorSaga.GUI
         private Timer timer = new Timer();
 
         private List<ElevatorShaftControl> elevatorShafts = new List<ElevatorShaftControl>();
+        private List<FloorControl> floorControls = new List<FloorControl>();
 
         public MainForm()
         {
@@ -74,6 +75,7 @@ namespace ElevatorSaga.GUI
         private void Timer_Tick(object sender, EventArgs e)
         {
             elevatorShafts.ForEach(x => x.Update());
+            floorControls.ForEach(x => x.Update());
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)

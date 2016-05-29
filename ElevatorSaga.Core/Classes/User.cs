@@ -22,7 +22,7 @@ namespace ElevatorSaga.Core.Classes
         /// <summary>
         /// Determines where the user want to go
         /// </summary>
-        public readonly Floor DestinationFloor;
+        public int DestinationFloor { get; private set; }
 
         /// <summary>
         /// 
@@ -71,18 +71,54 @@ namespace ElevatorSaga.Core.Classes
             }
         }
 
+        private static Random rnd = new Random();
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="currentFloor"></param>
+        /// <returns></returns>
+        public static User GetRandom(Floor currentFloor)
+        {
+            int rndVal = rnd.Next(4);
+            User u = null;
+            if (rndVal == 0) u = new Child(currentFloor);
+            else if (rndVal == 1) u = new Man(currentFloor);
+            else if (rndVal == 2) u = new Women(currentFloor);
+            else if (rndVal == 3) u = new WheelChaired(currentFloor);
+
+            return u;
+        }
+        
 
         /// <summary>
         /// Creates a user with waiting floor, and a destination floor
         /// </summary>
         /// <param name="currentFloor">The current floor, user is waiting on</param>
         /// <param name="destinationFloor">The destination floor, where user wants to go</param>
-        public User(Floor currentFloor, Floor destinationFloor)
+        public User(Floor currentFloor)
         {
             CurrentFloor = currentFloor;
-            DestinationFloor = destinationFloor;
+            PickRandomDestination();
         }
 
+        private void PickRandomDestination()
+        {
+            int floors = 4; //TODO get floor count
+            int dstFloor = -1;
+            do
+            {
+                dstFloor = rnd.Next(floors);
+            }
+            while (dstFloor == CurrentFloor.Level);
+
+            DestinationFloor = dstFloor;
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="gameTime"></param>
         public void Update(int gameTime)
         {
             if (gameTime % World.FPS == 0)
@@ -96,13 +132,13 @@ namespace ElevatorSaga.Core.Classes
         }
 
         /// <summary>
-        /// 
+        /// TODO
         /// </summary>
         public void PressButton()
         {
             if (CurrentFloor != null)
             {
-                if (CurrentFloor.Level < DestinationFloor.Level) CurrentFloor.PressUpButton();
+                if (CurrentFloor.Level < DestinationFloor) CurrentFloor.PressUpButton();
                 else CurrentFloor.PressDownButton();
             }
         }
@@ -133,7 +169,7 @@ namespace ElevatorSaga.Core.Classes
     /// </summary>
     public class Child : User
     {
-        public Child(Floor cf, Floor df) : base(cf, df) { }
+        public Child(Floor cf) : base(cf) { }
 
         /// <summary>
         /// Children usually light. 
@@ -153,7 +189,7 @@ namespace ElevatorSaga.Core.Classes
     /// </summary>
     public class Man : User
     {
-        public Man(Floor cf, Floor df) : base(cf, df) { }
+        public Man(Floor cf) : base(cf) { }
 
         /// <summary>
         /// This adult man, has 100kg weight. Uhh.
@@ -172,7 +208,7 @@ namespace ElevatorSaga.Core.Classes
     /// </summary>
     public class Women : User
     {
-        public Women(Floor cf, Floor df) : base(cf, df) { }
+        public Women(Floor cf) : base(cf) { }
 
         /// <summary>
         /// Female, she is 60kg.
@@ -191,7 +227,7 @@ namespace ElevatorSaga.Core.Classes
     /// </summary>
     public class WheelChaired : User
     {
-        public WheelChaired(Floor cf, Floor df) : base(cf, df) { }
+        public WheelChaired(Floor cf) : base(cf) { }
 
         /// <summary>
         /// Has 80 kg weight.

@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace ElevatorSaga.Core.Classes
 {
 
-    public class ElevatorStoppedEventArgs : EventArgs
+    public class FloorEventArgs : EventArgs
     {
         public readonly Elevator Elevator;
         public readonly int Floor;
 
-        public ElevatorStoppedEventArgs(Elevator el, int fl)
+        public FloorEventArgs(Elevator el, int fl)
         {
             Elevator = el;
             Floor = fl;
@@ -78,7 +78,7 @@ namespace ElevatorSaga.Core.Classes
         private bool waitingForUsers = false;
         private bool isMoving = false;
 
-        private int NextLevel = 0;
+        private int TargetFloor = 0;
 
         /// <summary>
         /// Event triggered, when some of indicator has been changed.
@@ -88,12 +88,14 @@ namespace ElevatorSaga.Core.Classes
         /// <summary>
         /// Event when a not queued floor is passed
         /// </summary>
-        public EventHandler<EventArgs> PassFloor;
+        public EventHandler<FloorEventArgs> PassFloor;
 
         /// <summary>
         /// Event for stopping at floor.
         /// </summary>
-        public EventHandler<ElevatorStoppedEventArgs> StoppedAtFloor;
+        public EventHandler<FloorEventArgs> StoppedAtFloor;
+
+        public EventHandler<FloorEventArgs> FloorButtonPressed;
 
         public EventHandler<EventArgs> Idle;
 
@@ -155,14 +157,16 @@ namespace ElevatorSaga.Core.Classes
         private int idleSince = 0;
         bool idleTriggered = false;
 
+        int passTriggered = -1;
+
         public void Update(int gt)
         {
             if (!waitingForUsers)
             {
                 if (!isMoving && DestinationQueue.Count > 0)
                 {
-                    NextLevel = DestinationQueue[0];
-                    _direction = NextLevel < Positinon ? Direction.Down : Direction.Up;
+                    TargetFloor = DestinationQueue[0];
+                    _direction = TargetFloor < Positinon ? Direction.Down : Direction.Up;
                     isMoving = true;
                     idleTriggered = false;
                     idleSince = 0;
@@ -178,19 +182,38 @@ namespace ElevatorSaga.Core.Classes
                 }
             }
 
-            if (isMoving && Math.Abs(Positinon - NextLevel) > 0.05)
+            if (isMoving)
             {
-                if (_direction == Direction.Down)
+                int closestFloor = -1;
+                if (_direction == Direction.Up)
+                {
+                    closestFloor = (int)Math.Floor(Positinon);
+                }
+                else if (_direction == Direction.Down)
+                {
+                    closestFloor = (int)Math.Ceiling(Positinon);
+                }
+                if (closestFloor != TargetFloor && passTriggered != closestFloor)
+                {
+                    passTriggered = closestFloor;
+
+                    if (PassFloor != null) PassFloor(this, new FloorEventArgs(this, closestFloor));
+                }
+            }
+
+            if (isMoving && Math.Abs(Positinon - TargetFloor) > 0.05)
+            {
+                if (_direction == Direction.Down) //TODO: replace with speed modifier
                     _position -= 0.1f;
                 else
                     _position += 0.1f;
             }
-            else if (isMoving && Math.Abs(Positinon - NextLevel) <= 0.05)
+            else if (isMoving && Math.Abs(Positinon - TargetFloor) <= 0.05)
             {
                 DestinationQueue.RemoveAt(0);
                 isMoving = false;
                 _direction = Direction.None;
-                if (StoppedAtFloor != null) StoppedAtFloor(this, new ElevatorStoppedEventArgs(this, (int)Math.Round(Positinon)));
+                if (StoppedAtFloor != null) StoppedAtFloor(this, new FloorEventArgs(this, (int)Math.Round(Positinon)));
                 waitingForUsers = true;
 
                 ExitUsers();
@@ -219,6 +242,10 @@ namespace ElevatorSaga.Core.Classes
             if (CanUserEnter(user))
             {
                 _usersIn.Add(user);
+
+                if (FloorButtonPressed != null)
+                    FloorButtonPressed(this, new FloorEventArgs(this, user.DestinationFloor));
+
                 success = true;
             }
 

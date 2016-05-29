@@ -30,7 +30,7 @@ namespace ElevatorSaga.GUI
 
             Floor.OnButtonStateChanged += Ev_OnButtonStateChanged;
 
-            lblLevel.Text = f.Level.ToString();
+            lblLevel.Text = string.Format("{0} ({1})", f.Level, f.AwaitingUsers.Length);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -38,6 +38,11 @@ namespace ElevatorSaga.GUI
             base.OnPaint(e);
 
             e.Graphics.DrawLine(Pens.Black, new Point(0, 0), new Point(Width, 0));
+        }
+
+        public void Update()
+        {
+            lblLevel.Text = string.Format("{0} ({1})", Floor.Level, Floor.AwaitingUsers.Length);
         }
 
         bool fromEvent = false;

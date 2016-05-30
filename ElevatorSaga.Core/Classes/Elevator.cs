@@ -8,12 +8,26 @@ using System.Threading.Tasks;
 
 namespace ElevatorSaga.Core.Classes
 {
-
+    /// <summary>
+    /// 
+    /// </summary>
     public class FloorEventArgs : EventArgs
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public readonly Elevator Elevator;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public readonly int Floor;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="el"></param>
+        /// <param name="fl"></param>
         public FloorEventArgs(Elevator el, int fl)
         {
             Elevator = el;
@@ -50,6 +64,33 @@ namespace ElevatorSaga.Core.Classes
     /// <summary>
     /// 
     /// </summary>
+    public class DoorStateEventArgs : EventArgs
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public readonly DoorState NewState;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Elevator Elevator;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ds"></param>
+        /// <param name="el"></param>
+        public DoorStateEventArgs(DoorState ds, Elevator el)
+        {
+            NewState = ds;
+            Elevator = el;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class Elevator : IElevatorGui
     {
         private Direction _direction = Direction.None;
@@ -78,12 +119,23 @@ namespace ElevatorSaga.Core.Classes
         private bool waitingForUsers = false;
         private bool isMoving = false;
 
+        private DoorState _doorState = DoorState.Opened;
+        /// <summary>
+        /// 
+        /// </summary>
+        public DoorState DoorsOpen { get { return _doorState; } }
+
         private int TargetFloor = 0;
 
         /// <summary>
         /// Event triggered, when some of indicator has been changed.
         /// </summary>
         public EventHandler<IndicatorEventArgs> IndicatorChanged;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public EventHandler<DoorStateEventArgs> DoorStateChanged;
 
         /// <summary>
         /// Event when a not queued floor is passed
@@ -95,8 +147,14 @@ namespace ElevatorSaga.Core.Classes
         /// </summary>
         public EventHandler<FloorEventArgs> StoppedAtFloor;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler<FloorEventArgs> FloorButtonPressed;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler<EventArgs> Idle;
 
         private int CurrentWeight { get { return _usersIn.Sum(x => x.Weigth); } }
@@ -109,7 +167,15 @@ namespace ElevatorSaga.Core.Classes
             get { return (int)Math.Floor((decimal)MaxWeight / 80); }
         }
 
-        private float _position = 0;
+        /// <summary>
+        /// 1 if open, 0 if closed
+        /// </summary>
+        private float _doorGap = 1f;
+
+        private float _position = 0f;
+        /// <summary>
+        /// 
+        /// </summary>
         public float Positinon
         {
             get
@@ -141,8 +207,11 @@ namespace ElevatorSaga.Core.Classes
         /// <param name="goFirst"></param>
         public void GoToFloor(int floor, bool goFirst = false)
         {
-            if (goFirst) DestinationQueue.Insert(0, floor);
-            else DestinationQueue.Add(floor);
+            if( !DestinationQueue.Contains(floor) )
+            {
+                if (goFirst) DestinationQueue.Insert(0, floor);
+                else DestinationQueue.Add(floor);
+            }
         }
 
         /// <summary>
@@ -159,12 +228,54 @@ namespace ElevatorSaga.Core.Classes
 
         int passTriggered = -1;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gt"></param>
         public void Update(int gt)
         {
+            if (_doorState == DoorState.Opening || _doorState == DoorState.Closing)
+            {
+                if (_doorState == DoorState.Closing)
+                {
+                    if (_doorGap > 0.05)
+                    {
+                        _doorGap -= 0.2f;
+                    }
+                    else
+                    {
+                        _doorState = DoorState.Closed;
+                        if (DoorStateChanged != null) DoorStateChanged(this, new DoorStateEventArgs(_doorState, this));
+                    }
+                }
+                else if (_doorState == DoorState.Opening)
+                {
+                    if (_doorGap < 0.95)
+                    {
+                        _doorGap += 0.2f;
+                    }
+                    else
+                    {
+                        _doorState = DoorState.Opened;
+                        if (DoorStateChanged != null) DoorStateChanged(this, new DoorStateEventArgs(_doorState, this));
+                        waitingForUsers = true;
+
+                        ExitUsers();
+                    }
+                }
+                return;
+            }
+
             if (!waitingForUsers)
             {
                 if (!isMoving && DestinationQueue.Count > 0)
                 {
+                    if (_doorState == DoorState.Opened)
+                    {
+                        CloseDoors();
+                        return;
+                    }
+
                     TargetFloor = DestinationQueue[0];
                     _direction = TargetFloor < Positinon ? Direction.Down : Direction.Up;
                     isMoving = true;
@@ -213,11 +324,43 @@ namespace ElevatorSaga.Core.Classes
                 DestinationQueue.RemoveAt(0);
                 isMoving = false;
                 _direction = Direction.None;
+                if (_doorState == DoorState.Closed)
+                {
+                    OpenDoors();
+                }
                 if (StoppedAtFloor != null) StoppedAtFloor(this, new FloorEventArgs(this, (int)Math.Round(Positinon)));
-                waitingForUsers = true;
-
-                ExitUsers();
             }
+        }
+
+        /// <summary>
+        /// Opens the elevator's door
+        /// </summary>
+        public void OpenDoors()
+        {
+            if (isMoving || _doorState == DoorState.Opening || _doorState == DoorState.Closing) return;
+
+            _doorState = DoorState.Opening;
+            if (DoorStateChanged != null) DoorStateChanged(this, new DoorStateEventArgs(_doorState, this));
+        }
+
+        /// <summary>
+        /// Closes the elevator's door
+        /// </summary>
+        public void CloseDoors()
+        {
+            if (isMoving || _doorState == DoorState.Opening || _doorState == DoorState.Closing) return;
+
+            _doorState = DoorState.Closing;
+            if (DoorStateChanged != null) DoorStateChanged(this, new DoorStateEventArgs(_doorState, this));
+        }
+
+        /// <summary>
+        /// Toggles the door. If open, then close. If closed, then open.
+        /// </summary>
+        public void ToggleDoors()
+        {
+            if (_doorState == DoorState.Opened) CloseDoors();
+            else CloseDoors();
         }
 
         private void ExitUsers()
@@ -262,5 +405,13 @@ namespace ElevatorSaga.Core.Classes
             if (user == null) throw new NullReferenceException("Parameter User cannot be null!");
             return CurrentWeight + user.Weigth < MaxWeight;
         }
+    }
+
+    public enum DoorState
+    {
+        Closed,
+        Opened,
+        Closing,
+        Opening
     }
 }

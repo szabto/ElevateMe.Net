@@ -116,7 +116,7 @@ namespace ElevatorSaga.Core.Classes
             }
         }
 
-        Random rnd = new Random();
+        static Random rnd = new Random();
 
         /// <summary>
         /// 
@@ -126,14 +126,19 @@ namespace ElevatorSaga.Core.Classes
         {
             awaitingUsers.ForEach(x => x.Update(gt));
 
-            if(rnd.Next(100) > 95)
+            try
             {
-                lock(awaitingUsers)
+                if (rnd.Next(100) > 95)
                 {
                     User u = User.GetRandom(this);
-                    awaitingUsers.Add(u);
+                    lock (awaitingUsers)
+                    {
+                        awaitingUsers.Add(u);
+                    }
+                    u.PressButton();
                 }
             }
+            catch { }
         }
 
         /// <summary>
@@ -193,6 +198,13 @@ namespace ElevatorSaga.Core.Classes
                 if (!u.OnEntranceAvailable(e)) // when user could not enter to elevator, press again the direction button.
                 {
                     u.PressButton();
+                }
+                else
+                {
+                    lock(awaitingUsers)
+                    {
+                        awaitingUsers.Remove(u);
+                    }
                 }
             }
         }

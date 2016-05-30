@@ -95,7 +95,6 @@ namespace ElevatorSaga.Core.Classes
         /// Creates a user with waiting floor, and a destination floor
         /// </summary>
         /// <param name="currentFloor">The current floor, user is waiting on</param>
-        /// <param name="destinationFloor">The destination floor, where user wants to go</param>
         public User(Floor currentFloor)
         {
             CurrentFloor = currentFloor;

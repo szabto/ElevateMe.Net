@@ -22,6 +22,16 @@ namespace ElevatorSaga.GUI
             Elevator = e;
 
             e.IndicatorChanged += OnIndicatorChanged;
+            e.DoorStateChanged += OnDoorStateChanged;
+            BackColor = Color.DarkOliveGreen;
+        }
+
+        private void OnDoorStateChanged(object sender, DoorStateEventArgs eargs)
+        {
+            this.Invoke(new Action(() =>
+            {
+                this.BackColor = eargs.NewState == DoorState.Closed ? Color.IndianRed : (eargs.NewState == DoorState.Opened ? Color.DarkOliveGreen : Color.Yellow);
+            }));
         }
 
         private void OnIndicatorChanged(object sender, IndicatorEventArgs eargs)

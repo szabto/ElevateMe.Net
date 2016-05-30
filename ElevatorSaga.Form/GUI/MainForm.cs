@@ -46,6 +46,8 @@ namespace ElevatorSaga.GUI
                 fc.Size = new Size(this.Width, floorHeight);
                 fc.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
+                floorControls.Add(fc);
+
                 panel1.Controls.Add(fc);
             };
 

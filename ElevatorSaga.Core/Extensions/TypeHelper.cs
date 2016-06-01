@@ -25,9 +25,9 @@ namespace ElevatorSaga.Core.Extensions
         {
             lock (loaderLock)
             {
-                assemblyName = assemblyName.ToLower();
+                //assemblyName = assemblyName.ToLower();
                 if (asmCache.ContainsKey(assemblyName)) { return asmCache[assemblyName]; }
-                return asmCache[assemblyName] = Assembly.Load(assemblyName);
+                return asmCache[assemblyName] = Assembly.LoadFrom(assemblyName);
             }
         }
 

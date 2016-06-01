@@ -27,7 +27,7 @@ namespace ElevatorSaga.GUI
         private List<ElevatorShaftControl> elevatorShafts = new List<ElevatorShaftControl>();
         private List<FloorControl> floorControls = new List<FloorControl>();
 
-        public MainForm()
+        public MainForm(string assemblyName = "")
         {
             InitializeComponent();
             _world = new World();
@@ -42,7 +42,7 @@ namespace ElevatorSaga.GUI
 
                 FloorControl fc = new FloorControl(a.Floor);
 
-                fc.Location = new Point(0, panel1.Height - ((a.Floor.Level +1) * floorHeight));
+                fc.Location = new Point(0, panel1.Height - ((a.Floor.Level + 1) * floorHeight));
                 fc.Size = new Size(this.Width, floorHeight);
                 fc.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
@@ -57,7 +57,7 @@ namespace ElevatorSaga.GUI
                 _elevators.Add(a.Elevator);
 
                 ElevatorShaftControl esc = new ElevatorShaftControl(a.Elevator, floorHeight, shaftWidth);
-                esc.Location = new Point(250 + ((_elevators.Count-1) * (shaftWidth + 10)), 0);
+                esc.Location = new Point(250 + ((_elevators.Count - 1) * (shaftWidth + 10)), 0);
                 esc.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
                 esc.Height = panel1.Height;
                 esc.Width = shaftWidth;
@@ -71,7 +71,18 @@ namespace ElevatorSaga.GUI
             };
 
             _world.Generate();
-            this.Height = (_floors.Count+1) * floorHeight;
+            this.Height = (_floors.Count + 1) * floorHeight;
+
+
+            if (!string.IsNullOrEmpty(assemblyName))
+                LoadAssembly("ElevatorSaga.CustomDll.CustomWorld, " + assemblyName);
+        }
+
+        private void LoadAssembly(string ap)
+        {
+            IWorld w = (IWorld)Activator.CreateInstance(ap.LoadType());
+
+            w.WorldGenerated(_floors, _elevators);
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -82,10 +93,7 @@ namespace ElevatorSaga.GUI
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            string assemblyName = "ElevatorSaga.CustomDll.CustomWorld, ElevatorSaga.CustomDll";
-            IWorld w = (IWorld)Activator.CreateInstance(assemblyName.LoadType());
-
-            w.WorldGenerated(_floors, _elevators);
+            LoadAssembly("ElevatorSaga.CustomDll.CustomWorld, ElevatorSaga.CustomDll");
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using ElevatorSaga.Core.Classes;
 using ElevatorSaga.Core.Extensions;
 using ElevatorSaga.Core.Interfaces;
+using System.Reflection;
 
 namespace ElevatorSaga.GUI
 {
@@ -75,14 +76,26 @@ namespace ElevatorSaga.GUI
 
 
             if (!string.IsNullOrEmpty(assemblyName))
-                LoadAssembly("ElevatorSaga.CustomDll.CustomWorld, " + assemblyName);
+                LoadAssembly(assemblyName);
         }
 
         private void LoadAssembly(string ap)
         {
-            IWorld w = (IWorld)Activator.CreateInstance(ap.LoadType());
+            IWorld world = null;
+            Assembly assembly = null;
+            if (ap.Contains(":")) //Absolute path
+                assembly = Assembly.LoadFrom(ap);
+            else //Relative path, near exe file.
+                assembly = Assembly.Load(ap);
 
-            w.WorldGenerated(_floors, _elevators);
+            try
+            {
+                world = (IWorld)Activator.CreateInstance(assembly.GetTypes().Where(p => typeof(IWorld).IsAssignableFrom(p)).FirstOrDefault());
+            }
+            catch { }
+
+            if (world != null)
+                world.WorldGenerated(_floors, _elevators);
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -93,7 +106,7 @@ namespace ElevatorSaga.GUI
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            LoadAssembly("ElevatorSaga.CustomDll.CustomWorld, ElevatorSaga.CustomDll");
+            LoadAssembly("ElevatorSaga.CustomDll");
         }
     }
 }

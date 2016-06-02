@@ -224,9 +224,9 @@ namespace ElevatorSaga.Core.Classes
         }
 
         private int idleSince = 0;
-        bool idleTriggered = false;
+        private bool idleTriggered = false;
 
-        int passTriggered = -1;
+        private int passTriggered = -1;
 
         /// <summary>
         /// 

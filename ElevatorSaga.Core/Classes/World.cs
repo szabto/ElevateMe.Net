@@ -84,6 +84,7 @@ namespace ElevatorSaga.Core.Classes
             _instance = this;
         }
 
+        //Test for branching
         private void Update(object state)
         {
             gameTime++;

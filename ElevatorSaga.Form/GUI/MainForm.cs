@@ -94,8 +94,7 @@ namespace ElevatorSaga.GUI
             }
             catch { }
 
-            if (world != null)
-                world.WorldGenerated(_floors, _elevators);
+            if (world != null) world.WorldGenerated(_floors, _elevators);
         }
 
         private void Timer_Tick(object sender, EventArgs e)

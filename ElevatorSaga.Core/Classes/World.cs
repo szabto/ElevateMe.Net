@@ -87,9 +87,14 @@ namespace ElevatorSaga.Core.Classes
         private void Update(object state)
         {
             gameTime++;
-
-            _elevators.ForEach(x => x.Update(gameTime));
-            _floors.ForEach(x => x.Update(gameTime));
+            lock (_elevators)
+            {
+                _elevators.ForEach(x => x.Update(gameTime));
+            }
+            lock(_floors)
+            {
+                _floors.ForEach(x => x.Update(gameTime));
+            }
         }
 
 
@@ -105,13 +110,20 @@ namespace ElevatorSaga.Core.Classes
             {
                 foreach (Floor f in chall.Floors)
                 {
-                    _floors.Add(f);
+
+                    lock (_floors)
+                    {
+                        _floors.Add(f);
+                    }
                     if (FloorAdded != null) FloorAdded(this, new FloorAddedEventArgs(f));
                 }
 
                 foreach (Elevator el in chall.Elevators)
                 {
-                    _elevators.Add(el);
+                    lock (_elevators)
+                    {
+                        _elevators.Add(el);
+                    }
                     if (ElevatorAdded != null) ElevatorAdded(this, new ElevatorAddedEventArgs(el));
                 }
             }

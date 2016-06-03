@@ -73,8 +73,9 @@
             // 
             this.chkUp.Appearance = System.Windows.Forms.Appearance.Button;
             this.chkUp.AutoSize = true;
+            this.chkUp.Checked = true;
+            this.chkUp.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkUp.Enabled = false;
             this.chkUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkUp.Location = new System.Drawing.Point(3, 3);
             this.chkUp.Name = "chkUp";
@@ -88,8 +89,9 @@
             // 
             this.chkDown.Appearance = System.Windows.Forms.Appearance.Button;
             this.chkDown.AutoSize = true;
+            this.chkDown.Checked = true;
+            this.chkDown.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDown.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chkDown.Enabled = false;
             this.chkDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkDown.Location = new System.Drawing.Point(93, 3);
             this.chkDown.Name = "chkDown";

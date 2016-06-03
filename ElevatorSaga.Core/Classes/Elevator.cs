@@ -109,7 +109,7 @@ namespace ElevatorSaga.Core.Classes
         /// <summary>
         /// Indicates when elevator can go down. Will affect User's behavior.
         /// </summary>
-        public bool GoingDownIndicator { get { return _goingDownindicator; } set { if (IndicatorChanged != null && _goingDownindicator != value) IndicatorChanged(this, new IndicatorEventArgs(Direction.Up, value)); _goingDownindicator = value; } }
+        public bool GoingDownIndicator { get { return _goingDownindicator; } set { if (IndicatorChanged != null && _goingDownindicator != value) IndicatorChanged(this, new IndicatorEventArgs(Direction.Down, value)); _goingDownindicator = value; } }
 
         /// <summary>
         /// Floor list with destination levels. Not sorted automatically
